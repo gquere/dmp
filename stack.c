@@ -67,7 +67,7 @@ void * stack_pop(struct stack *this)
 	void *return_addr;
 
 	if (this->nb_elems == 0) {
-		fprintf(stderr, "Warning: Accessed 0-size stack\n");
+		return NULL;
 	}
 
 	return_addr = this->elems[this->nb_elems-1];
