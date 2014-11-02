@@ -23,10 +23,10 @@ install: libs
 
 ## TARGETS ##
 stack:
-	$(CC) $(CFLAGS) stack.c -o libstack.so $(LDFLAGS)
+	$(CC) $(CFLAGS) src/stack.c -o libstack.so $(LDFLAGS)
 
 dmp:
-	$(CC) $(CFLAGS) dmp.c -o libdmp.so $(LDFLAGS) -lstack
+	$(CC) $(CFLAGS) src/dmp.c -o libdmp.so $(LDFLAGS) -lstack
 
 use:
 	$(CC) $(CFLAGS) use.c -o use -ldmp -lstack
