@@ -1,4 +1,4 @@
-#define MAX_STACK_SIZE	8192
+#define MAX_STACK_SIZE	8192*2
 
 struct stack {
 	void *elems[MAX_STACK_SIZE];
