@@ -46,8 +46,9 @@ void stack_delete(struct stack *this)
 int32_t stack_push(struct stack *this, void *elem_addr)
 {
 	if (this->nb_elems >= MAX_STACK_SIZE) {
-		fprintf(stderr, "Error: Stack is full\n");
-		return EXIT_FAILURE;
+		fprintf(stderr, "Error: Stack is full, drop element\n");
+		free(elem_addr);
+        return EXIT_FAILURE;
 	}
 
 	this->elems[this->nb_elems] = elem_addr;
