@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 #include "stack.h"
 #include "dmp.h"
 
@@ -48,6 +49,7 @@ void * dmp_acquire(struct dmp *this)
 		}
 	}
 
+    memset(element, 0, this->element_size);
 	return element;
 }
 
