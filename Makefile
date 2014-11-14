@@ -10,7 +10,7 @@ clean:
 	rm compare || true
 
 ## BUILD ##
-libs: stack dmp
+libs: stack dmp queue
 
 bin: use compare
 
@@ -25,8 +25,12 @@ install: libs
 stack:
 	$(CC) $(CFLAGS) src/stack.c -o libstack.so $(LDFLAGS)
 
+queue:
+	$(CC) $(CFLAGS) src/queue.c -o libqueue.so $(LDFLAGS)
+
 dmp:
 	$(CC) $(CFLAGS) src/dmp.c -o libdmp.so $(LDFLAGS) -lstack
+
 
 use:
 	$(CC) $(CFLAGS) use.c -o use -ldmp -lstack
