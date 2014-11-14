@@ -46,6 +46,7 @@ void * dmp_acquire(struct dmp *this)
 		element = calloc(1, this->element_size);
 		if (element == NULL) {
 			fprintf(stderr, "Error: Allocation failure in dmp_acquire\n");
+            return NULL;
 		}
 	}
 
