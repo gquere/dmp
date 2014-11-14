@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <semaphore.h>
+
 #include "stack.h"
 #include "dmp.h"
 
