@@ -5,6 +5,7 @@ struct queue {
 	int32_t nb_elems;
 	int32_t current_read;
 	int32_t current_write;
+    sem_t lock;
 };
 
 
