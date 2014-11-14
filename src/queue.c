@@ -69,7 +69,7 @@ int32_t queue_push(struct queue *this, void *elem_addr)
     sem_wait(&this->lock);
 
 	if (this->nb_elems >= MAX_QUEUE_SIZE) {
-		fprintf(stderr, "Error: Stack is full\n");
+//		fprintf(stderr, "Error: Queue is full");
         sem_post(&this->lock);
 		return EXIT_FAILURE;
 	}
@@ -98,7 +98,7 @@ void * queue_pop(struct queue *this)
 
     sem_wait(&this->lock);
 
-	if (this->nb_elems == 0 || this->current_read == -1) {
+	if (this->nb_elems == 0) {
         sem_post(&this->lock);
 		return NULL;
 	}
@@ -106,6 +106,9 @@ void * queue_pop(struct queue *this)
 	return_addr = this->elems[this->current_read];
 	this->nb_elems--;
 	this->current_read++;
+    if (this->current_read == MAX_QUEUE_SIZE) {
+        this->current_read = 0;
+    }
 
     sem_post(&this->lock);
 
