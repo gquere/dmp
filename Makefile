@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -O2 -Wall -Wextra -I./include -L.
+CFLAGS = -O2 -Wall -Wextra -I./include -L. -ggdb3
 LDFLAGS = -fPIC -shared
 
 all: libs bin
@@ -24,10 +24,10 @@ install: libs
 
 ## TARGETS ##
 stack:
-	$(CC) $(CFLAGS) src/stack.c -o libstack.so $(LDFLAGS)
+	$(CC) $(CFLAGS) src/stack.c -o libstack.so $(LDFLAGS) -lpthread
 
 queue:
-	$(CC) $(CFLAGS) src/queue.c -o libqueue.so $(LDFLAGS)
+	$(CC) $(CFLAGS) src/queue.c -o libqueue.so $(LDFLAGS) -lpthread
 
 dmp:
 	$(CC) $(CFLAGS) src/dmp.c -o libdmp.so $(LDFLAGS) -lstack

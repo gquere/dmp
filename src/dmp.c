@@ -18,100 +18,113 @@
 /******************************************************************************/
 struct dmp * dmp_new(int count, ...)
 {
-	struct dmp *this = NULL;
-	va_list ap;
-	struct memory_pool *new, *current;
-	int i;
+    struct dmp *this = NULL;
+    va_list ap;
+    struct memory_pool *new, *current;
+    int i;
 
-	/* dmp is a pointer to a linked list of pools of various sizes */
-	this = calloc(1, sizeof(struct dmp));
-	if (this == NULL) {
-		fprintf(stderr, "Error: Allocation failure in dmp_new()\n");
-		return NULL;
-	}
+    /* dmp is a pointer to a linked list of pools of various sizes */
+    this = calloc(1, sizeof(struct dmp));
+    if (this == NULL) {
+        fprintf(stderr, "Error: Allocation failure in dmp_new()\n");
+        return NULL;
+    }
 
-	/* read all sizes and create pools accordingly */
-	va_start(ap, count);
-	for (i = 0; i < count; i++) {
-		new = calloc(1, sizeof(struct memory_pool));
-		new->element_size = va_arg(ap, size_t);
-		new->free_elements = stack_new();
-		if (i == 0) {
-			this->first = new;
-		} else {
-			current->next = new;
-		}
-		current = new;
-	}
-	va_end(ap);
+    /* read all sizes and create pools accordingly */
+    va_start(ap, count);
+    for (i = 0; i < count; i++) {
+        new = calloc(1, sizeof(struct memory_pool));
+        new->element_size = va_arg(ap, size_t) + sizeof(int);
+        new->free_elements = stack_new();
+        if (i == 0) {
+            this->first = new;
+        } else {
+            current->next = new;
+        }
+        current = new;
+    }
+    va_end(ap);
 
 
-	return this;
+    return this;
 }
 
 void dmp_delete(struct dmp *this)
 {
-	struct memory_pool *current, *tmp;
+    struct memory_pool *current, *tmp;
 
-	current = tmp = this->first;
-	while (current != NULL) {
-		tmp = current->next;
-		stack_delete(current->free_elements);
-		free(current);
-		current = tmp;
-	}
+    current = tmp = this->first;
+    while (current != NULL) {
+        tmp = current->next;
+        stack_delete(current->free_elements);
+        free(current);
+        current = tmp;
+    }
 }
 
 
 /******************************************************************************/
 struct memory_pool * identify_correct_pool(struct dmp *this, size_t element_size)
 {
-	struct memory_pool *correct_pool = this->first;
+    struct memory_pool *correct_pool = this->first;
 
-	/* identify correct pool based on size */
-	while (correct_pool != NULL && correct_pool->element_size < element_size) {
-		correct_pool = correct_pool->next;
-	}
+    /* identify correct pool based on size */
+    while (correct_pool != NULL && correct_pool->element_size < element_size) {
+        correct_pool = correct_pool->next;
+    }
 
-	return correct_pool;
+    return correct_pool;
 }
 
 void * dmp_acquire(struct dmp *this, size_t element_size)
 {
-	void *element = NULL;
-	struct memory_pool *correct_pool = NULL;
+    void *element = NULL;
+    struct memory_pool *correct_pool = NULL;
+    int *size;
 
-	correct_pool = identify_correct_pool(this, element_size);
-	if (correct_pool == NULL) {
-		fprintf(stderr, "Error: no matching pool for element size %d\n", element_size);
-		return NULL;
-	}
+    /* find pool which size matches that of the element */
+    correct_pool = identify_correct_pool(this, element_size + sizeof(int));
+    if (correct_pool == NULL) {
+        fprintf(stderr, "Error: no matching pool for element size %d\n", element_size);
+        return NULL;
+    }
 
-	element = stack_pop(correct_pool->free_elements);
-	if (element == NULL) {
-		element = calloc(1, correct_pool->element_size);
-		if (element == NULL) {
-			fprintf(stderr, "Error: Allocation failure in dmp_acquire\n");
+    /* try to get element from pool, otherwise allocate it */
+    element = stack_pop(correct_pool->free_elements);
+    if (element == NULL) {
+        element = calloc(1, correct_pool->element_size);
+        if (element == NULL) {
+            fprintf(stderr, "Error: Allocation failure in dmp_acquire\n");
             return NULL;
-		}
-	}
+        }
+    } else {
+        memset(element, 0, element_size);
+    }
 
-    memset(element, 0, this->element_size);
-	return element;
+    /* write HIDDEN element size at begining */
+    size = (int *) element;
+    *size = element_size + sizeof(int);
+    return element + sizeof(int);
 }
 
-// FIXME: propagation ?
 int32_t dmp_release(struct dmp *this, void *element)
 {
-	struct memory_pool *pool = NULL;
+    struct memory_pool *pool = NULL;
+    int *size = NULL;
+    int *element_start;
 
-	pool = identify_correct_pool(this, sizeof(*element));
-	printf("found pool of size %d\n", pool->element_size);
-	if (pool == NULL) {
-		fprintf(stderr, "Error: element has no matching pool\n");
-		return EXIT_FAILURE;
-	}
+    /* element size is hidden before the element */
+    size = (int *) (element - sizeof(int));
 
-	return stack_push(pool->free_elements, element);
+    /* find pool to which element belongs */
+    pool = identify_correct_pool(this, *size);
+    if (pool == NULL) {
+        fprintf(stderr, "Error: element of size %d has no matching pool\n", *size);
+        return EXIT_FAILURE;
+    }
+
+    element_start = size;
+
+    return stack_push(pool->free_elements, element_start);
 }
 
