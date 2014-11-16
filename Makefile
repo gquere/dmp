@@ -32,6 +32,7 @@ queue:
 dmp:
 	$(CC) $(CFLAGS) src/dmp.c -o libdmp.so $(LDFLAGS) -lstack
 
+
 use:
 	$(CC) $(CFLAGS) use.c -o use -ldmp -lstack
 

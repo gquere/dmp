@@ -5,12 +5,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <semaphore.h>
+
 #include "stack.h"
 
 /******************************************************************************/
 struct stack * stack_new(void)
 {
 	struct stack *this = NULL;
+    int res;
 
 	this = calloc(1, sizeof(struct stack));
 	if (this == NULL) {
@@ -19,6 +22,13 @@ struct stack * stack_new(void)
 	}
 
 	this->nb_elems = 0;
+
+    res = sem_init(&this->lock, 0, 1);
+    if (res != 0) {
+        fprintf(stderr, "Error: Failed creating semaphore\n");
+        free(this);
+        return NULL;
+    }
 
 	return this;
 }
@@ -31,6 +41,7 @@ void stack_delete(struct stack *this)
 		free(this->elems[i]);
 	}
 
+    sem_destroy(&this->lock);
 	free(this);
 }
 
@@ -45,14 +56,18 @@ void stack_delete(struct stack *this)
  */
 int32_t stack_push(struct stack *this, void *elem_addr)
 {
+    sem_wait(&this->lock);
 	if (this->nb_elems >= MAX_STACK_SIZE) {
-		fprintf(stderr, "Error: Stack is full, drop element\n");
+		//fprintf(stderr, "Error: Stack is full, drop element\n");
 		free(elem_addr);
-        return EXIT_FAILURE;
+        elem_addr = NULL;
+        sem_post(&this->lock);
+        return EXIT_SUCCESS;
 	}
 
 	this->elems[this->nb_elems] = elem_addr;
 	this->nb_elems++;
+    sem_post(&this->lock);
 
 	return EXIT_SUCCESS;
 }
@@ -67,13 +82,17 @@ void * stack_pop(struct stack *this)
 {
 	void *return_addr;
 
+    sem_wait(&this->lock);
+
 	if (this->nb_elems == 0) {
+        sem_post(&this->lock);
 		return NULL;
 	}
 
 	return_addr = this->elems[this->nb_elems-1];
 	this->nb_elems--;
 
+    sem_post(&this->lock);
 	return return_addr;
 }
 

@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdarg.h>
+#include <semaphore.h>
 
 #include "stack.h"
 #include "dmp.h"
@@ -91,6 +92,7 @@ void * dmp_acquire(struct dmp *this, size_t element_size)
 		element = calloc(1, correct_pool->element_size);
 		if (element == NULL) {
 			fprintf(stderr, "Error: Allocation failure in dmp_acquire\n");
+            return NULL;
 		}
 	}
 

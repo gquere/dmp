@@ -3,6 +3,7 @@
 struct stack {
 	void *elems[MAX_STACK_SIZE];
 	int32_t nb_elems;
+    sem_t lock;
 };
 
 

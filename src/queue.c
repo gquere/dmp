@@ -5,12 +5,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <semaphore.h>
+
 #include "queue.h"
+
 
 /******************************************************************************/
 struct queue * queue_new(void)
 {
 	struct queue *this = NULL;
+    int res = 0;
 
 	this = calloc(1, sizeof(struct queue));
 	if (this == NULL) {
@@ -21,6 +25,13 @@ struct queue * queue_new(void)
 	this->nb_elems = 0;
 	this->current_write = 0;
 	this->current_read = 0;
+
+    res = sem_init(&this->lock, 0, 1);
+    if (res != 0) {
+        fprintf(stderr, "Error: Failed creating semaphore\n");
+        free(this);
+        return NULL;
+    }
 
 	return this;
 }
@@ -39,6 +50,8 @@ void queue_delete(struct queue *this)
 		}
 	}
 
+    sem_destroy(&this->lock);
+
 	free(this);
 }
 
@@ -53,8 +66,11 @@ void queue_delete(struct queue *this)
  */
 int32_t queue_push(struct queue *this, void *elem_addr)
 {
+    sem_wait(&this->lock);
+
 	if (this->nb_elems >= MAX_QUEUE_SIZE) {
-		fprintf(stderr, "Error: Stack is full\n");
+//		fprintf(stderr, "Error: Queue is full");
+        sem_post(&this->lock);
 		return EXIT_FAILURE;
 	}
 
@@ -64,6 +80,8 @@ int32_t queue_push(struct queue *this, void *elem_addr)
 	if (this->current_write == MAX_QUEUE_SIZE) {
 		this->current_write = 0;
 	}
+
+    sem_post(&this->lock);
 
 	return EXIT_SUCCESS;
 }
@@ -78,13 +96,21 @@ void * queue_pop(struct queue *this)
 {
 	void *return_addr;
 
-	if (this->nb_elems == 0 || this->current_read == -1) {
+    sem_wait(&this->lock);
+
+	if (this->nb_elems == 0) {
+        sem_post(&this->lock);
 		return NULL;
 	}
 
 	return_addr = this->elems[this->current_read];
 	this->nb_elems--;
 	this->current_read++;
+    if (this->current_read == MAX_QUEUE_SIZE) {
+        this->current_read = 0;
+    }
+
+    sem_post(&this->lock);
 
 	return return_addr;
 }
