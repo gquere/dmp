@@ -8,11 +8,12 @@ clean:
 	rm *.so || true
 	rm use || true
 	rm compare || true
+	rm use_queue || true
 
 ## BUILD ##
-libs: stack dmp
+libs: stack dmp queue
 
-bin: use compare
+bin: use compare use_queue
 
 ## INSTALL ##
 install: libs
@@ -25,6 +26,9 @@ install: libs
 stack:
 	$(CC) $(CFLAGS) src/stack.c -o libstack.so $(LDFLAGS)
 
+queue:
+	$(CC) $(CFLAGS) src/queue.c -o libqueue.so $(LDFLAGS)
+
 dmp:
 	$(CC) $(CFLAGS) src/dmp.c -o libdmp.so $(LDFLAGS) -lstack
 
@@ -33,3 +37,6 @@ use:
 
 compare:
 	$(CC) $(CFLAGS) compare.c -o compare
+
+use_queue:
+	$(CC) $(CFLAGS) use_queue.c -o use_queue -lqueue
