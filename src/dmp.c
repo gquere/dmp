@@ -85,7 +85,7 @@ void * dmp_acquire(struct dmp *this, size_t element_size)
     /* find pool which size matches that of the element */
     correct_pool = identify_correct_pool(this, element_size + sizeof(int));
     if (correct_pool == NULL) {
-        fprintf(stderr, "Error: no matching pool for element size %d\n", element_size);
+        fprintf(stderr, "Error: no matching pool for element size %zu\n", element_size);
         return NULL;
     }
 
