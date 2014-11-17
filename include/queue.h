@@ -1,4 +1,4 @@
-#define MAX_QUEUE_SIZE	8192
+#define MAX_QUEUE_SIZE	8192*8
 
 struct queue {
 	void *elems[MAX_QUEUE_SIZE];

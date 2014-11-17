@@ -6,9 +6,6 @@ all: libs bin
 
 clean:
 	rm *.so || true
-	rm use || true
-	rm compare || true
-	rm use_queue || true
 
 ## BUILD ##
 libs: stack dmp queue
@@ -32,12 +29,3 @@ queue:
 dmp:
 	$(CC) $(CFLAGS) src/dmp.c -o libdmp.so $(LDFLAGS) -lstack
 
-
-use:
-	$(CC) $(CFLAGS) use.c -o use -ldmp -lstack
-
-compare:
-	$(CC) $(CFLAGS) compare.c -o compare
-
-use_queue:
-	$(CC) $(CFLAGS) use_queue.c -o use_queue -lqueue
