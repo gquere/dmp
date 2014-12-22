@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -O2 -Wall -Wextra -I./include -L. -ggdb3
 LDFLAGS = -fPIC -shared
 
-all: libs bin
+all: libs
 
 clean:
 	rm *.so || true
@@ -10,7 +10,6 @@ clean:
 ## BUILD ##
 libs: stack dmp queue
 
-bin: use compare use_queue
 
 ## INSTALL ##
 install: libs
