@@ -45,7 +45,6 @@ struct dmp * dmp_new(int count, ...)
     }
     va_end(ap);
 
-
     return this;
 }
 
@@ -112,6 +111,7 @@ int32_t dmp_release(struct dmp *this, void *element)
     struct memory_pool *pool = NULL;
     int *size = NULL;
     int *element_start;
+    int32_t res;
 
     /* element size is hidden before the element */
     size = (int *) (element - sizeof(int));
@@ -125,6 +125,12 @@ int32_t dmp_release(struct dmp *this, void *element)
 
     element_start = size;
 
-    return stack_push(pool->free_elements, element_start);
+    res = stack_push(pool->free_elements, element_start);
+    if (res != EXIT_SUCCESS) { /* stack is full */
+        free(size);
+        element = NULL;
+    }
+
+    return EXIT_SUCCESS;
 }
 

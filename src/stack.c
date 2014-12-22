@@ -58,11 +58,8 @@ int32_t stack_push(struct stack *this, void *elem_addr)
 {
     sem_wait(&this->lock);
 	if (this->nb_elems >= MAX_STACK_SIZE) {
-		//fprintf(stderr, "Error: Stack is full, drop element\n");
-		free(elem_addr);
-        elem_addr = NULL;
         sem_post(&this->lock);
-        return EXIT_SUCCESS;
+        return EXIT_FAILURE;
 	}
 
 	this->elems[this->nb_elems] = elem_addr;
@@ -89,7 +86,7 @@ void * stack_pop(struct stack *this)
 		return NULL;
 	}
 
-	return_addr = this->elems[this->nb_elems-1];
+	return_addr = this->elems[this->nb_elems - 1];
 	this->nb_elems--;
 
     sem_post(&this->lock);
